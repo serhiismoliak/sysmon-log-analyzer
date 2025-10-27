@@ -9,3 +9,6 @@ tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 clap = { version = "4.5.50", features = ["derive"] }
 chrono = "0.4.42"
+colored = "3.0.0"
+sysmon = "0.2.5"
+evtx = "0.8.5"

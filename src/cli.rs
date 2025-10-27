@@ -2,10 +2,8 @@
 use std::path::PathBuf;
 use clap::{Parser, Subcommand, Args};
 use chrono::NaiveDateTime;
-use crate::cli::parse::execute_parse;
-use crate::cli::watch::execute_watch;
-mod parse;
-mod watch;
+use crate::commands::parse::execute_parse;
+use crate::commands::watch::execute_watch;
 
 #[derive(Parser)]
 #[command(name = "Sysmon Log Analyzer")]

@@ -1,5 +1,7 @@
 mod telemetry;
 mod cli;
+mod parser;
+mod commands;
 
 use anyhow::Result;
 
