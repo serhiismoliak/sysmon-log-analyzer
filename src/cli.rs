@@ -33,7 +33,7 @@ pub struct ParseCommand {
 
     /// Display events whose Event ID is in the provided list (e.g. 1,2,7)
     #[arg(long, value_delimiter = ',')]
-    pub event_id: Option<Vec<u16>>,
+    pub event_id: Option<Vec<u8>>,
 
     /// Search by substring in key fields
     #[arg(long)]
@@ -61,7 +61,7 @@ pub struct ParseCommand {
 pub struct WatchCommand {
     /// Display events whose Event ID is in the provided list (e.g. 1,2,7)
     #[arg(long, value_delimiter = ',')]
-    pub event_id: Option<Vec<u16>>,
+    pub event_id: Option<Vec<u8>>,
 
     /// Search by substring in key fields
     #[arg(long)]

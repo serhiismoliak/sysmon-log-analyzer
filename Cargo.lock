@@ -1045,6 +1045,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sealed"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22f968c5ea23d555e670b449c1c5e7b2fc399fdaec1d304a17cd48e288abc107"
+dependencies = [
+ "proc-macro2",
+ "quote 1.0.41",
+ "syn 2.0.108",
+]
+
+[[package]]
 name = "security_log_analyser"
 version = "0.1.0"
 dependencies = [
@@ -1053,6 +1064,7 @@ dependencies = [
  "clap",
  "colored",
  "evtx",
+ "sealed",
  "sysmon",
  "tracing",
  "tracing-subscriber",

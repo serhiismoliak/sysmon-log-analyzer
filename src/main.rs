@@ -2,6 +2,7 @@ mod telemetry;
 mod cli;
 mod parser;
 mod commands;
+mod filters;
 
 use anyhow::Result;
 
