@@ -2,7 +2,7 @@ use crate::cli::ParseCommand;
 use anyhow::Result;
 use colored::*;
 use tracing::info;
-use crate::{analyzer, filters, parser};
+use crate::{analyzer, display, filters, parser};
 
 pub fn execute_parse(cmd: ParseCommand) -> Result<()> {
     let ParseCommand {
@@ -10,7 +10,6 @@ pub fn execute_parse(cmd: ParseCommand) -> Result<()> {
         event_id,
         search,
         detect,
-        output,
         after,
         before,
     } = cmd;
@@ -40,6 +39,6 @@ pub fn execute_parse(cmd: ParseCommand) -> Result<()> {
     } else {
         Vec::new()
     };
-    dbg!(filtered_events);
+    display::display_events(&filtered_events);
     Ok(())
 }

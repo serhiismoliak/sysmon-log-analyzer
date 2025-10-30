@@ -50,10 +50,6 @@ pub struct ParseCommand {
     /// Enable anomaly detection
     #[arg(long, short)]
     pub detect: bool,
-
-    /// Save results to the file in JSON format
-    #[arg(long, short)]
-    pub output: Option<PathBuf>,
 }
 
 #[cfg(windows)]
@@ -70,10 +66,6 @@ pub struct WatchCommand {
     /// Enable anomaly detection
     #[arg(long, short)]
     pub detect: bool,
-
-    /// Save results to the file in JSON format
-    #[arg(long, short)]
-    pub output: Option<PathBuf>,
 }
 
 pub fn execute(config: Config) -> anyhow::Result<()> {

@@ -13,3 +13,13 @@ colored = "3.0.0"
 sysmon = "0.2.5"
 evtx = "0.8.5"
 sealed = "0.6.0"
+ctrlc = "3.5.1"
+prettytable-rs = "0.10.0"
+
+[target.'cfg(windows)'.dependencies]
+windows = {version = "0.62.2", features = [
+    "Win32_Foundation",
+    "Win32_System_EventLog",
+    "Win32_Security",
+    "Win32_System_Threading",
+]}

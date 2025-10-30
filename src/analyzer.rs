@@ -48,7 +48,34 @@ impl Display for Severity {
             Severity::High => write!(f, "High"),
             Severity::Critical => write!(f, "Critical"),
         }
-    }   
+    }
+}
+/// Detect anomalies for a single live event (for `watch` command)
+pub fn detect_anomalies_live(event: &SysmonEvent, context: &VecDeque<SysmonEvent>) -> Vec<Anomaly> {
+    let mut anomalies = Vec::new();
+    match &event {
+        SysmonEvent::ProcessCreate(event) => {
+            if let Some(anomaly) = check_suspicious_parent_child(event) {
+                anomalies.push(anomaly);
+            }
+            if let Some(anomaly) = check_process_depth(event, context) {
+                anomalies.push(anomaly);
+            }
+            if let Some(anomaly) = check_event_storm_live(event, context) {
+                anomalies.push(anomaly);
+            }
+        },
+        SysmonEvent::OutboundNetwork(event) | SysmonEvent::InboundNetwork(event) => {
+            if let Some(anomaly) = check_unusual_port(event) {
+                anomalies.push(anomaly);
+            }
+            if let Some(anomaly) = check_unusual_port(event) {
+                anomalies.push(anomaly);
+            }
+        },
+        SysmonEvent::FileCreate(event) => {}
+    }
+    anomalies
 }
 
 impl Anomaly {

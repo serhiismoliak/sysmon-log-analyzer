@@ -1,12 +1,5 @@
-mod telemetry;
-mod cli;
-mod parser;
-mod commands;
-mod filters;
-mod analyzer;
-mod helpers;
-
 use anyhow::Result;
+use security_log_analyser::{cli, telemetry};
 
 fn main() -> Result<()> {
     telemetry::init_tracing();
