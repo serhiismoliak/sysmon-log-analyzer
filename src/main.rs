@@ -3,6 +3,8 @@ mod cli;
 mod parser;
 mod commands;
 mod filters;
+mod analyzer;
+mod helpers;
 
 use anyhow::Result;
 

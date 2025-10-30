@@ -1,7 +1,8 @@
 use crate::cli::ParseCommand;
 use anyhow::Result;
 use colored::*;
-use crate::{filters, parser};
+use tracing::info;
+use crate::{analyzer, filters, parser};
 
 pub fn execute_parse(cmd: ParseCommand) -> Result<()> {
     let ParseCommand {
@@ -26,6 +27,19 @@ pub fn execute_parse(cmd: ParseCommand) -> Result<()> {
         events.len().to_string().bright_green(),
         filtered_events.len().to_string().bright_red()
     );
+    let anomalies = if detect {
+        info!("Running anomaly detection");
+        let detected = analyzer::detect_anomalies(&filtered_events);
+        if !detected.is_empty() {
+            println!("Anomalies detected:");
+            for anomaly in &detected {
+                println!("{}: {}", anomaly.severity().to_string().bright_red(), anomaly.description());
+            }
+        }
+        detected
+    } else {
+        Vec::new()
+    };
     dbg!(filtered_events);
     Ok(())
 }
