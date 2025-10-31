@@ -2,7 +2,7 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::Display;
 use chrono::{DateTime, Duration, NaiveDateTime, Utc};
-use sysmon::{Event as SysmonEvent, NetworkEvent, ProcessCreateEvent};
+use crate::sysmon::{Event as SysmonEvent, NetworkEvent, ProcessCreateEvent};
 use tracing::debug;
 use crate::helpers::HasSystem;
 

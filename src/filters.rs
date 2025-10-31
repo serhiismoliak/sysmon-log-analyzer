@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use sysmon::{Event as SysmonEvent, NetworkEvent, System};
+use crate::sysmon::{Event as SysmonEvent, NetworkEvent, System};
 use tracing::debug;
 use crate::helpers::HasSystem;
 

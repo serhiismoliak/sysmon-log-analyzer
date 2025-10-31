@@ -2,7 +2,7 @@ use crate::cli::WatchCommand;
 use anyhow::Result;
 use colored::Colorize;
 use crate::{filters, live_monitor};
-use sysmon::{Event as SysmonEvent};
+use crate::sysmon::{Event as SysmonEvent};
 
 #[cfg(windows)]
 pub(crate) fn execute_watch(

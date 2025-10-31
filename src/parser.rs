@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 use evtx::{EvtxParser, ParserSettings};
-use sysmon::Event as SysmonEvent;
+use crate::sysmon::Event as SysmonEvent;
 use anyhow::{Context, Result};
 use tracing::{debug, warn};
 pub fn parse_evtx_file(path: &Path) -> Result<Vec<SysmonEvent>> {
@@ -31,17 +31,8 @@ pub fn parse_evtx_file(path: &Path) -> Result<Vec<SysmonEvent>> {
 }
 /// Parse Sysmon XML event
 pub fn parse_xml_event(xml: &str) -> anyhow::Result<SysmonEvent> {
-    // The Sysmon XML schema requires the root element to be <Event>
-    // Windows api gives us a string without <Event> tag, so we wrap it
-    // Everything else is handled by the `sysmon` crate
-    let wrapped_xml = {
-        if xml.trim().starts_with("<Event>") {
-            xml.to_string()
-        } else {
-            format!("<Event>{}</Event>", xml)
-        }
-    };
-    sysmon::Event::from_str(&wrapped_xml)
+    println!("{}", xml);
+    SysmonEvent::from_str(&xml)
         .map_err(|e| anyhow::anyhow!("Failed to parse event XML: {}", e))
 }
 

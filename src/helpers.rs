@@ -1,5 +1,5 @@
 use sealed::sealed;
-use sysmon::{Event, FileCreateEvent, NetworkEvent, ProcessCreateEvent, System};
+use crate::sysmon::{Event, FileCreateEvent, NetworkEvent, ProcessCreateEvent, System};
 use crate::helpers::__seal_has_system::Sealed;
 #[sealed]
 pub trait HasSystem {

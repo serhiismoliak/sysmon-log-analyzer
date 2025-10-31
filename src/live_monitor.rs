@@ -9,7 +9,7 @@ use windows::{
     }
 };
 use crate::filters::EventFilter;
-use sysmon::{Event as SysmonEvent};
+use crate::sysmon::{Event as SysmonEvent};
 use anyhow::{anyhow, Result};
 use colored::Colorize;
 use tracing::{debug, error, info, warn};

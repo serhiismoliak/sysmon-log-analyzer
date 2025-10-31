@@ -1,5 +1,5 @@
 use colored::{Color, ColoredString, Colorize};
-use sysmon::{Event as SysmonEvent};
+use crate::sysmon::{Event as SysmonEvent};
 use prettytable::{Cell, Row, Table};
 use crate::analyzer::{Anomaly, Severity};
 use crate::helpers::HasSystem;
