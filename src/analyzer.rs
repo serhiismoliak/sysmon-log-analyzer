@@ -4,7 +4,7 @@ use crate::sysmon::{Event as SysmonEvent, NetworkEvent, ProcessCreateEvent};
 use chrono::{DateTime, Duration, Utc};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::Display;
-use tracing::{debug, info};
+use tracing::info;
 
 #[derive(Debug, Clone)]
 pub enum Anomaly {
@@ -98,7 +98,7 @@ impl Anomaly {
     pub fn description(&self) -> String {
         match self {
             Anomaly::UntrustedExecutable { reason, .. } => {
-                format!("Untrusted Executable: {}", reason)
+                format!("Untrusted Executable: {reason}")
             }
             Anomaly::SuspiciousParentChild {
                 parent,
@@ -107,15 +107,14 @@ impl Anomaly {
                 ..
             } => {
                 format!(
-                    "Suspicious Process Chain: {} -> {} ({})",
-                    parent, child, reason
+                    "Suspicious Process Chain: {parent} -> {child} ({reason})"
                 )
             }
             Anomaly::DeepProcessTree { depth, .. } => {
-                format!("Deep Process Nesting: {} levels", depth)
+                format!("Deep Process Nesting: {depth} levels")
             }
             Anomaly::UnusualPort { port, process, .. } => {
-                format!("Unusual Network Port: {} used by {}", port, process)
+                format!("Unusual Network Port: {port} used by {process}")
             }
             Anomaly::EventStorm {
                 event_id,
@@ -123,8 +122,7 @@ impl Anomaly {
                 time_window_seconds,
             } => {
                 format!(
-                    "Event Storm: ID {} ({} events in {}s)",
-                    event_id, count, time_window_seconds
+                    "Event Storm: ID {event_id} ({count} events in {time_window_seconds}s)"
                 )
             }
         }

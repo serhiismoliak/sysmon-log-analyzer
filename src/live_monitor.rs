@@ -47,12 +47,11 @@ fn verify_sysmon_channel() -> Result<()> {
         if let Err(e) = handle {
             return Err(anyhow!(
                 "Sysmon channel not found or inaccessible!\n\
-                Error: {}\n\
+                Error: {e}\n\
                 Possible reasons:\n\
                 1. Sysmon is not installed.\n\
                 2. Sysmon service is not running.\n\
-                3. Application was not run as administrator.",
-                e.to_string()
+                3. Application was not run as administrator."
             ));
         }
         let _ = EvtClose(handle?);
@@ -65,7 +64,7 @@ unsafe fn subscribe_to_events(
     detect: bool,
     running: Arc<AtomicBool>,
     events_buffer: Arc<Mutex<VecDeque<SysmonEvent>>>,
-) -> Result<()> {
+) -> Result<()> { unsafe {
     let channel_path = w!("Microsoft-Windows-Sysmon/Operational");
     let query = build_xpath_query(&filter);
     let query_wide = HSTRING::from(&query);
@@ -144,16 +143,16 @@ unsafe fn subscribe_to_events(
     info!("Processed {} events", event_count);
     println!(
         "\n{}",
-        format!("Processed {} events:", event_count).bright_green()
+        format!("Processed {event_count} events:").bright_green()
     );
     Ok(())
-}
+}}
 
 /// Process a single event handle from the subscription
 unsafe fn process_event_handle(
     event_handle: EVT_HANDLE,
     filter: &EventFilter,
-) -> Result<Option<SysmonEvent>> {
+) -> Result<Option<SysmonEvent>> { unsafe {
     let event_xml = render_event_xml(event_handle)?;
     match parser::parse_xml_event(&event_xml) {
         Ok(event) => {
@@ -165,13 +164,13 @@ unsafe fn process_event_handle(
         }
         Err(e) => {
             debug!("Failed to deserialize event: {}", e);
-            Err(e.into())
+            Err(e)
         }
     }
-}
+}}
 
 /// Render the event data to an XML string
-unsafe fn render_event_xml(event_handle: EVT_HANDLE) -> Result<String> {
+unsafe fn render_event_xml(event_handle: EVT_HANDLE) -> Result<String> { unsafe {
     let mut buffer_size = 0u32;
     let mut buffer_used = 0u32;
     let mut property_count = 0u32;
@@ -200,14 +199,14 @@ unsafe fn render_event_xml(event_handle: EVT_HANDLE) -> Result<String> {
     let pcwstr = PCWSTR(str_buffer.as_ptr());
     let xml_string = pcwstr.to_string()?;
     Ok(xml_string)
-}
+}}
 /// Build the XPath query to pre-filter events at the API level
 fn build_xpath_query(filter: &EventFilter) -> String {
     let mut condition = Vec::new();
     if let Some(ids) = filter.get_event_ids() {
         if ids.is_empty() {
             let id_conditions: Vec<String> =
-                ids.iter().map(|id| format!("EventID={}", id)).collect();
+                ids.iter().map(|id| format!("EventID={id}")).collect();
             condition.push(id_conditions.join(" or "));
         }
     }

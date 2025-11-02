@@ -42,7 +42,7 @@ fn add_event_row(table: &mut Table, event: &SysmonEvent) {
         Cell::new(&event.system().time_created.system_time),
         Cell::new(&event.system().event_id.event_id.to_string()),
         Cell::new(event_type),
-        Cell::new(&*process_name.color(color)),
+        Cell::new(&process_name.color(color)),
         Cell::new(details.as_str()),
     ]));
 }
@@ -116,7 +116,7 @@ pub fn print_compact_event(event: &SysmonEvent, count: usize) {
     print!(
         "[{}] {} {} {} {} ",
         event.system().time_created.system_time.bright_black(),
-        format!("#{}", count).dimmed(),
+        format!("#{count}").dimmed(),
         format!("ID:{}", event.system().event_id.event_id).bright_yellow(),
         process_name.color(color),
         "->".bright_black()
@@ -147,15 +147,13 @@ fn get_process_and_color(event: &SysmonEvent) -> (Color, String) {
         .unwrap_or(image.image.as_str())
         .to_string();
     let lower_name = process_name.to_lowercase();
-    let shell = vec![
-        "powershell.exe",
+    let shell = ["powershell.exe",
         "cmd.exe",
         "wscript.exe",
         "cscript.exe",
         "sh.exe",
         "bash.exe",
-        "zsh.exe",
-    ];
+        "zsh.exe"];
     let color = if shell.contains(&lower_name.as_str()) {
         Color::Red // High risk
     } else if event.system().event_id.event_id == 3 {

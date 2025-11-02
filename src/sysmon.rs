@@ -60,8 +60,8 @@ impl Event {
     pub fn from_str(s: impl AsRef<str>) -> Result<Self> {
         let s = s.as_ref();
         serde_xml_rs::from_str::<ProcessCreateEvent>(s)
-            .map(|p| Event::ProcessCreate(p))
-            .or_else(|_| serde_xml_rs::from_str::<FileCreateEvent>(s).map(|f| Event::FileCreate(f)))
+            .map(Event::ProcessCreate)
+            .or_else(|_| serde_xml_rs::from_str::<FileCreateEvent>(s).map(Event::FileCreate))
             .or_else(|_| {
                 serde_xml_rs::from_str::<NetworkEvent>(s).map(|n| {
                     if n.event_data.initiated {
@@ -71,7 +71,7 @@ impl Event {
                     }
                 })
             })
-            .map_err(|e| anyhow!("Error : {:?} {}", e, s))
+            .map_err(|e| anyhow!("Error : {e:?} {s}"))
     }
 }
 
@@ -625,8 +625,8 @@ pub struct IntermediaryEventData {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::File;
-    use std::io::{BufRead, BufReader};
+    
+    
 
     const NETWORK_EVENT: &str = r#"
     <Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
@@ -736,7 +736,7 @@ mod tests {
     </Event>
     "#;
 
-    const HEADER: &'static str = r#"
+    const HEADER: &str = r#"
         <System>
             <Provider Name="Microsoft-Windows-Sysmon" Guid="{5770385F-C22A-43E0-BF4C-06F5698FFBD9}" />
             <EventID>1</EventID>

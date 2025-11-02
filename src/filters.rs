@@ -1,7 +1,6 @@
 use crate::helpers::HasSystem;
-use crate::sysmon::{Event as SysmonEvent, NetworkEvent, System};
+use crate::sysmon::Event as SysmonEvent;
 use chrono::{DateTime, Utc};
-use tracing::debug;
 
 #[derive(Debug, Clone, Default)]
 pub struct EventFilter {
@@ -71,7 +70,7 @@ impl EventFilter {
         {
             return true;
         }
-        let check = |s: &str| s.to_lowercase().contains(&search);
+        let check = |s: &str| s.to_lowercase().contains(search);
 
         match event {
             SysmonEvent::ProcessCreate(proc) => {
