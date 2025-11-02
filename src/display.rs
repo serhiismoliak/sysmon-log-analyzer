@@ -167,7 +167,6 @@ fn get_process_and_color(event: &SysmonEvent) -> (Color, String) {
     (color, process_name)
 }
 pub fn format_event_details(event: &SysmonEvent) -> String {
-    let id = event.system().event_id.event_id;
     match &event {
         SysmonEvent::ProcessCreate(event) => event.event_data.command_line.to_string(),
         SysmonEvent::InboundNetwork(event) | SysmonEvent::OutboundNetwork(event) => {

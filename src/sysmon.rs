@@ -28,6 +28,7 @@ use std::convert::TryFrom;
 
 use anyhow::{Result, anyhow};
 use chrono::prelude::*;
+use derive_is_enum_variant::is_enum_variant;
 use failure::_core::ops::Deref;
 use serde::de::Error as SerdeError;
 use serde::{Deserialize, Deserializer};
@@ -230,7 +231,9 @@ impl ProcessGuid {
         let b = [guid[OFF + 1], guid[OFF], guid[OFF + 3], guid[OFF + 2]];
 
         let ts = i32::from_le_bytes(b);
-        Utc.timestamp(ts as i64, 0).timestamp() as u64
+        let dt: DateTime<Utc> = Utc.timestamp_opt(ts as i64, 0).single().unwrap();
+        let ts_back: u64 = dt.timestamp() as u64;
+        ts_back
     }
 }
 

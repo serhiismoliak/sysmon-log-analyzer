@@ -23,6 +23,6 @@ pub(crate) fn execute_watch(cmd: WatchCommand) -> Result<()> {
     let filter = filters::EventFilter::new()
         .with_event_ids(event_id)
         .with_search_term(search);
-    let captured_events: Vec<SysmonEvent> = live_monitor::start_monitoring(filter, detect)?;
+    let _captured_events: Vec<SysmonEvent> = live_monitor::start_monitoring(filter, detect)?;
     Ok(())
 }

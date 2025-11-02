@@ -73,7 +73,7 @@ pub fn detect_anomalies_live(event: &SysmonEvent, context: &VecDeque<SysmonEvent
                 anomalies.push(anomaly);
             }
         }
-        SysmonEvent::FileCreate(event) => {}
+        SysmonEvent::FileCreate(_event) => {}
     }
     anomalies
 }

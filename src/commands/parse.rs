@@ -29,7 +29,7 @@ pub fn execute_parse(cmd: ParseCommand) -> Result<()> {
         events.len().to_string().bright_green(),
         filtered_events.len().to_string().bright_red()
     );
-    let anomalies = if detect {
+    let _anomalies = if detect {
         info!("Running anomaly detection");
         let detected = analyzer::detect_anomalies(&filtered_events);
         if !detected.is_empty() {
