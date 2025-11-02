@@ -1,8 +1,8 @@
 use crate::cli::ParseCommand;
+use crate::{analyzer, display, filters, parser};
 use anyhow::Result;
 use colored::*;
 use tracing::info;
-use crate::{analyzer, display, filters, parser};
 
 pub fn execute_parse(cmd: ParseCommand) -> Result<()> {
     let ParseCommand {
@@ -14,7 +14,10 @@ pub fn execute_parse(cmd: ParseCommand) -> Result<()> {
         before,
     } = cmd;
     println!("{}", "Security Log Analyzer".bright_cyan().bold());
-    println!("Analyzing file: {}\n", file_path.to_string_lossy().bright_yellow());
+    println!(
+        "Analyzing file: {}\n",
+        file_path.to_string_lossy().bright_yellow()
+    );
     let events = parser::parse_evtx_file(&file_path)?;
     let filters = filters::EventFilter::new()
         .with_event_ids(event_id)
@@ -32,7 +35,11 @@ pub fn execute_parse(cmd: ParseCommand) -> Result<()> {
         if !detected.is_empty() {
             println!("Anomalies detected:");
             for anomaly in &detected {
-                println!("{}: {}", anomaly.severity().to_string().bright_red(), anomaly.description());
+                println!(
+                    "{}: {}",
+                    anomaly.severity().to_string().bright_red(),
+                    anomaly.description()
+                );
             }
         }
         detected

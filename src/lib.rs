@@ -1,4 +1,5 @@
-#[macro_use] extern crate prettytable;
+#[macro_use]
+extern crate prettytable;
 extern crate anyhow;
 extern crate chrono;
 #[macro_use]
@@ -9,14 +10,14 @@ extern crate serde_derive;
 extern crate serde_xml_rs;
 extern crate uuid;
 
-pub mod parser;
-pub mod commands;
-pub mod filters;
 pub mod analyzer;
-mod helpers;
-pub mod display;
 pub mod cli;
-pub mod telemetry;
+pub mod commands;
+pub mod display;
+pub mod filters;
+mod helpers;
 #[cfg(windows)]
 mod live_monitor;
+pub mod parser;
 mod sysmon;
+pub mod telemetry;

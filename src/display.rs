@@ -1,8 +1,8 @@
-use colored::{Color, ColoredString, Colorize};
-use crate::sysmon::{Event as SysmonEvent};
-use prettytable::{Cell, Row, Table};
 use crate::analyzer::{Anomaly, Severity};
 use crate::helpers::HasSystem;
+use crate::sysmon::Event as SysmonEvent;
+use colored::{Color, ColoredString, Colorize};
+use prettytable::{Cell, Row, Table};
 
 const EVENTS_DISPLAYED: usize = 100;
 
@@ -67,14 +67,26 @@ pub fn display_anomalies(anomalies: &[Anomaly]) {
             severity_color(anomaly.severity()),
             anomaly.description().bright_white().bold()
         );
-        println!("   {} {}", "Time:".bright_black(), event.system().time_created.system_time);
+        println!(
+            "   {} {}",
+            "Time:".bright_black(),
+            event.system().time_created.system_time
+        );
         let (_, process_name) = get_process_and_color(event);
-        println!("   {} {}", "Process:".bright_black(), process_name.bright_cyan());
+        println!(
+            "   {} {}",
+            "Process:".bright_black(),
+            process_name.bright_cyan()
+        );
         if let Some(cmd) = get_command_line(event) {
             println!("   {} {}", "Command:".bright_black(), truncate(&cmd, 70));
         }
         if let Some(parent) = get_parent_image(event) {
-            println!("   {} {}", "Parent:".bright_black(), parent.bright_magenta());
+            println!(
+                "   {} {}",
+                "Parent:".bright_black(),
+                parent.bright_magenta()
+            );
         }
     }
     println!("\n{}", "─".repeat(80).bright_black());
@@ -124,22 +136,26 @@ fn severity_color(severity: Severity) -> ColoredString {
 /// Get the primary process name and risk color
 fn get_process_and_color(event: &SysmonEvent) -> (Color, String) {
     let image = match &event {
-        SysmonEvent::ProcessCreate(event) => {
-            &event.event_data.image
-        },
-        SysmonEvent::InboundNetwork(event) => {
-            &event.event_data.image
-        },
-        SysmonEvent::OutboundNetwork(event) => {
-            &event.event_data.image
-        },
-        SysmonEvent::FileCreate(event) => {
-            &event.event_data.image
-        },
+        SysmonEvent::ProcessCreate(event) => &event.event_data.image,
+        SysmonEvent::InboundNetwork(event) => &event.event_data.image,
+        SysmonEvent::OutboundNetwork(event) => &event.event_data.image,
+        SysmonEvent::FileCreate(event) => &event.event_data.image,
     };
-    let process_name = image.rsplit('\\').next().unwrap_or(image.image.as_str()).to_string();
+    let process_name = image
+        .rsplit('\\')
+        .next()
+        .unwrap_or(image.image.as_str())
+        .to_string();
     let lower_name = process_name.to_lowercase();
-    let shell = vec!["powershell.exe", "cmd.exe", "wscript.exe", "cscript.exe", "sh.exe", "bash.exe", "zsh.exe"];
+    let shell = vec![
+        "powershell.exe",
+        "cmd.exe",
+        "wscript.exe",
+        "cscript.exe",
+        "sh.exe",
+        "bash.exe",
+        "zsh.exe",
+    ];
     let color = if shell.contains(&lower_name.as_str()) {
         Color::Red // High risk
     } else if event.system().event_id.event_id == 3 {
@@ -155,37 +171,31 @@ fn get_process_and_color(event: &SysmonEvent) -> (Color, String) {
 pub fn format_event_details(event: &SysmonEvent) -> String {
     let id = event.system().event_id.event_id;
     match &event {
-        SysmonEvent::ProcessCreate(event) => {
-            event.event_data.command_line.to_string()
-        },
+        SysmonEvent::ProcessCreate(event) => event.event_data.command_line.to_string(),
         SysmonEvent::InboundNetwork(event) | SysmonEvent::OutboundNetwork(event) => {
             let data = &event.event_data;
             format!(
                 "{} -> {}:{}",
-                data.protocol,
-                data.destination_ip,
-                data.destination_port
+                data.protocol, data.destination_ip, data.destination_port
             )
-        },
+        }
         SysmonEvent::FileCreate(event) => {
             format!("File: {}", event.event_data.target_filename)
-        },
+        }
     }
 }
 fn get_command_line(event: &SysmonEvent) -> Option<String> {
     match &event {
         SysmonEvent::ProcessCreate(event) => {
             Some(event.event_data.command_line.command_line.clone())
-        },
-        _ => None
+        }
+        _ => None,
     }
 }
 fn get_parent_image(event: &SysmonEvent) -> Option<String> {
     match &event {
-        SysmonEvent::ProcessCreate(event) => {
-            Some(event.event_data.parent_image.image.clone())
-        },
-        _ => None
+        SysmonEvent::ProcessCreate(event) => Some(event.event_data.parent_image.image.clone()),
+        _ => None,
     }
 }
 /// Truncate string to max length

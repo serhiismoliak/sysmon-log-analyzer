@@ -1,10 +1,10 @@
 #![allow(dead_code)]
+use crate::helpers::HasSystem;
+use crate::sysmon::{Event as SysmonEvent, NetworkEvent, ProcessCreateEvent};
+use chrono::{DateTime, Duration, Utc};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::Display;
-use chrono::{DateTime, Duration, Utc};
-use crate::sysmon::{Event as SysmonEvent, NetworkEvent, ProcessCreateEvent};
 use tracing::{debug, info};
-use crate::helpers::HasSystem;
 
 #[derive(Debug, Clone)]
 pub enum Anomaly {
@@ -31,7 +31,7 @@ pub enum Anomaly {
         event_id: u8,
         count: usize,
         time_window_seconds: i64,
-    }
+    },
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Severity {
@@ -64,7 +64,7 @@ pub fn detect_anomalies_live(event: &SysmonEvent, context: &VecDeque<SysmonEvent
             if let Some(anomaly) = check_event_storm_live(event, context) {
                 anomalies.push(anomaly);
             }
-        },
+        }
         SysmonEvent::OutboundNetwork(event) | SysmonEvent::InboundNetwork(event) => {
             if let Some(anomaly) = check_unusual_port(event) {
                 anomalies.push(anomaly);
@@ -72,7 +72,7 @@ pub fn detect_anomalies_live(event: &SysmonEvent, context: &VecDeque<SysmonEvent
             if let Some(anomaly) = check_unusual_port(event) {
                 anomalies.push(anomaly);
             }
-        },
+        }
         SysmonEvent::FileCreate(event) => {}
     }
     anomalies
@@ -82,8 +82,12 @@ impl Anomaly {
     pub fn severity(&self) -> Severity {
         match self {
             Anomaly::UntrustedExecutable { reason, .. } => {
-                if reason.contains("Invalid") { Severity::High } else { Severity::Medium }
-            },
+                if reason.contains("Invalid") {
+                    Severity::High
+                } else {
+                    Severity::Medium
+                }
+            }
             Anomaly::SuspiciousParentChild { .. } => Severity::High,
             Anomaly::DeepProcessTree { depth, .. } if *depth > 7 => Severity::High,
             Anomaly::DeepProcessTree { .. } => Severity::Medium,
@@ -96,8 +100,16 @@ impl Anomaly {
             Anomaly::UntrustedExecutable { reason, .. } => {
                 format!("Untrusted Executable: {}", reason)
             }
-            Anomaly::SuspiciousParentChild { parent, child, reason, .. } => {
-                format!("Suspicious Process Chain: {} -> {} ({})", parent, child, reason)
+            Anomaly::SuspiciousParentChild {
+                parent,
+                child,
+                reason,
+                ..
+            } => {
+                format!(
+                    "Suspicious Process Chain: {} -> {} ({})",
+                    parent, child, reason
+                )
             }
             Anomaly::DeepProcessTree { depth, .. } => {
                 format!("Deep Process Nesting: {} levels", depth)
@@ -105,8 +117,15 @@ impl Anomaly {
             Anomaly::UnusualPort { port, process, .. } => {
                 format!("Unusual Network Port: {} used by {}", port, process)
             }
-            Anomaly::EventStorm { event_id, count, time_window_seconds } => {
-                format!("Event Storm: ID {} ({} events in {}s)", event_id, count, time_window_seconds)
+            Anomaly::EventStorm {
+                event_id,
+                count,
+                time_window_seconds,
+            } => {
+                format!(
+                    "Event Storm: ID {} ({} events in {}s)",
+                    event_id, count, time_window_seconds
+                )
             }
         }
     }
@@ -116,7 +135,9 @@ impl Anomaly {
             | Anomaly::SuspiciousParentChild { event, .. }
             | Anomaly::DeepProcessTree { event, .. }
             | Anomaly::UnusualPort { event, .. } => event,
-            Anomaly::EventStorm { .. } => panic!("EventStorm anomaly does not have a associated event"),
+            Anomaly::EventStorm { .. } => {
+                panic!("EventStorm anomaly does not have a associated event")
+            }
         }
     }
 }
@@ -149,7 +170,10 @@ impl AnomalyDetector {
         }
     }
     fn analyze_batch(&mut self, events: &[SysmonEvent]) -> Vec<Anomaly> {
-        info!("Starting batch anomaly detection on {} events", events.len());
+        info!(
+            "Starting batch anomaly detection on {} events",
+            events.len()
+        );
 
         let mut sorted_events = events.to_vec();
         sorted_events.sort_by_key(|event| event.system().time_created.system_time.clone());
@@ -160,9 +184,11 @@ impl AnomalyDetector {
                     .or_default()
                     .push(parsed_time);
             } else {
-                info!("Failed to parse timestamp for event {}: '{}'",
-                           event.system().event_id.event_id,
-                           event.system().time_created.system_time);
+                info!(
+                    "Failed to parse timestamp for event {}: '{}'",
+                    event.system().event_id.event_id,
+                    event.system().time_created.system_time
+                );
                 continue;
             }
             match event {
@@ -171,7 +197,7 @@ impl AnomalyDetector {
                         self.anomalies.push(anomaly)
                     }
                     self.check_process_depth_batch(event);
-                },
+                }
                 SysmonEvent::OutboundNetwork(event) => {
                     if let Some(anomaly) = check_unusual_port(event) {
                         self.anomalies.push(anomaly);
@@ -181,7 +207,10 @@ impl AnomalyDetector {
             }
         }
         self.check_event_storms_batch();
-        info!("Finished batch anomaly detection on {} events", events.len());
+        info!(
+            "Finished batch anomaly detection on {} events",
+            events.len()
+        );
         self.anomalies.clone()
     }
     fn check_process_depth_batch(&mut self, event: &ProcessCreateEvent) {
@@ -191,10 +220,7 @@ impl AnomalyDetector {
         let parent_depth = self.process_depth.get(&parent_pid).cloned().unwrap_or(0);
         let current_depth = parent_depth + 1;
         self.process_depth.insert(pid, current_depth);
-        self.process_chains
-            .entry(parent_pid)
-            .or_default()
-            .push(pid);
+        self.process_chains.entry(parent_pid).or_default().push(pid);
         if current_depth > DEEP_NESTING_THRESHOLD {
             self.anomalies.push(Anomaly::DeepProcessTree {
                 event: SysmonEvent::ProcessCreate(event.clone()),
@@ -229,7 +255,11 @@ impl AnomalyDetector {
 fn check_suspicious_parent_child(event: &ProcessCreateEvent) -> Option<Anomaly> {
     let parent = &event.event_data.parent_image;
     let child = &event.event_data.image;
-    let parent_name = parent.image.rsplit('\\').next().unwrap_or(parent.image.as_str());
+    let parent_name = parent
+        .image
+        .rsplit('\\')
+        .next()
+        .unwrap_or(parent.image.as_str());
     let child_name = child.rsplit('\\').next().unwrap_or(child.image.as_str());
     let parent_lower = parent_name.to_lowercase();
     let child_lower = child_name.to_lowercase();
@@ -242,13 +272,15 @@ fn check_suspicious_parent_child(event: &ProcessCreateEvent) -> Option<Anomaly> 
             parent: parent_name.to_string(),
             child: child_name.to_string(),
             reason: "svchost.exe is spawned by a non-service process".to_string(),
-        })
+        });
     }
     // Rule: Office apps spawning shells
     let office_apps = ["winword.exe", "excel.exe", "powerpnt.exe"];
     let shell_processes = ["powershell.exe", "cmd.exe", "wscript.exe", "cscript.exe"];
 
-    if office_apps.contains(&parent_lower.as_str()) && shell_processes.contains(&child_lower.as_str()) {
+    if office_apps.contains(&parent_lower.as_str())
+        && shell_processes.contains(&child_lower.as_str())
+    {
         return Some(Anomaly::SuspiciousParentChild {
             event: SysmonEvent::ProcessCreate(event.clone()),
             parent: parent_name.to_string(),
@@ -274,7 +306,10 @@ fn check_unusual_port(event: &NetworkEvent) -> Option<Anomaly> {
     None
 }
 /// Check process depth context buffer (for live analysis)
-fn check_process_depth(event: &ProcessCreateEvent, context: &VecDeque<SysmonEvent>) -> Option<Anomaly> {
+fn check_process_depth(
+    event: &ProcessCreateEvent,
+    context: &VecDeque<SysmonEvent>,
+) -> Option<Anomaly> {
     let data = &event.event_data;
     let parent_pid = data.parent_process_id;
     let mut depth = 1;
@@ -282,7 +317,7 @@ fn check_process_depth(event: &ProcessCreateEvent, context: &VecDeque<SysmonEven
     let mut visited = HashSet::new();
     visited.insert(data.process_id);
     while current_pid != 0 && visited.insert(current_pid) {
-        if let Some(parent_event) = context.iter().rev().find(|e|{
+        if let Some(parent_event) = context.iter().rev().find(|e| {
             if let SysmonEvent::ProcessCreate(e) = e {
                 e.event_data.process_id == current_pid
             } else {
@@ -306,12 +341,16 @@ fn check_process_depth(event: &ProcessCreateEvent, context: &VecDeque<SysmonEven
     None
 }
 /// Stateful check for event storms using context buffer (for live analysis)
-fn check_event_storm_live(event: &ProcessCreateEvent, context: &VecDeque<SysmonEvent>) -> Option<Anomaly> {
+fn check_event_storm_live(
+    event: &ProcessCreateEvent,
+    context: &VecDeque<SysmonEvent>,
+) -> Option<Anomaly> {
     let event_id = event.system().event_id.event_id;
-    let window_end_time = match DateTime::parse_from_rfc3339(&event.system().time_created.system_time) {
-        Ok(dt) => dt.with_timezone(&Utc),
-        Err(_) => return None, // skip malformed time
-    };
+    let window_end_time =
+        match DateTime::parse_from_rfc3339(&event.system().time_created.system_time) {
+            Ok(dt) => dt.with_timezone(&Utc),
+            Err(_) => return None, // skip malformed time
+        };
     let window_start_time = window_end_time - Duration::seconds(EVENT_STORM_WINDOW_SECONDS as i64);
     let mut count = 0;
     for e in context.iter().rev() {

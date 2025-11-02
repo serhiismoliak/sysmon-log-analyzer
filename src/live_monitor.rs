@@ -1,44 +1,35 @@
-use std::collections::VecDeque;
-use std::sync::{Arc, Mutex};
-use std::sync::atomic::{AtomicBool, Ordering};
-use windows::{
-    core::*,
-    Win32::{
-        Foundation::*,
-        System::EventLog::*,
-    }
-};
 use crate::filters::EventFilter;
-use crate::sysmon::{Event as SysmonEvent};
-use anyhow::{anyhow, Result};
+use crate::sysmon::Event as SysmonEvent;
+use crate::{analyzer, display, parser};
+use anyhow::{Result, anyhow};
 use colored::Colorize;
+use std::collections::VecDeque;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 use tracing::{debug, error, info, warn};
 use windows::Win32::System::Threading::{CreateEventW, ResetEvent, WaitForSingleObject};
-use crate::{analyzer, display, parser};
+use windows::{
+    Win32::{Foundation::*, System::EventLog::*},
+    core::*,
+};
 const BUFFER_SIZE: usize = 1000;
 
-pub fn start_monitoring(
-    filter: EventFilter,
-    detect: bool,
-) -> Result<Vec<SysmonEvent>> {
+pub fn start_monitoring(filter: EventFilter, detect: bool) -> Result<Vec<SysmonEvent>> {
     info!("Starting live monitoring");
     verify_sysmon_channel()?;
     // Set up Ctrl+C handler
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
     ctrlc::set_handler(move || {
-        println!("\n{}", "Received stop signal... shutting down.".bright_yellow());
+        println!(
+            "\n{}",
+            "Received stop signal... shutting down.".bright_yellow()
+        );
         r.store(false, Ordering::SeqCst);
     })?;
     let events_buffer = Arc::new(Mutex::new(VecDeque::with_capacity(BUFFER_SIZE)));
-    let sub_result = unsafe {
-        subscribe_to_events(
-            filter,
-            detect,
-            running.clone(),
-            events_buffer.clone(),
-        )
-    };
+    let sub_result =
+        unsafe { subscribe_to_events(filter, detect, running.clone(), events_buffer.clone()) };
     if let Err(e) = sub_result {
         error!("Error subscribing to events failed: {}", e);
         return Err(e);
@@ -79,7 +70,10 @@ unsafe fn subscribe_to_events(
     let query = build_xpath_query(&filter);
     let query_wide = HSTRING::from(&query);
     debug!("XPath query: {}", query);
-    println!("{}", "Subscription active. Waiting for events...\n".bright_green());
+    println!(
+        "{}",
+        "Subscription active. Waiting for events...\n".bright_green()
+    );
     let signal_event = CreateEventW(None, true, false, None)?;
     let subscription = EvtSubscribe(
         None,
@@ -100,13 +94,7 @@ unsafe fn subscribe_to_events(
             loop {
                 let mut events: [isize; 16] = [EVT_HANDLE::default().0; 16];
                 let mut returned = 0u32;
-                let result = EvtNext(
-                    subscription,
-                    &mut events,
-                    0,
-                    0,
-                    &mut returned,
-                );
+                let result = EvtNext(subscription, &mut events, 0, 0, &mut returned);
                 if let Err(e) = result {
                     if e.code() == ERROR_NO_MORE_ITEMS.to_hresult() {
                         break;
@@ -154,7 +142,10 @@ unsafe fn subscribe_to_events(
     let _ = CloseHandle(signal_event);
 
     info!("Processed {} events", event_count);
-    println!("\n{}", format!("Processed {} events:", event_count).bright_green());
+    println!(
+        "\n{}",
+        format!("Processed {} events:", event_count).bright_green()
+    );
     Ok(())
 }
 
@@ -194,7 +185,7 @@ unsafe fn render_event_xml(event_handle: EVT_HANDLE) -> Result<String> {
         &mut property_count,
     );
 
-    let mut str_buffer = vec![0u16; (buffer_size / 2) as usize +1];
+    let mut str_buffer = vec![0u16; (buffer_size / 2) as usize + 1];
     EvtRender(
         None,
         event_handle,
@@ -215,10 +206,8 @@ fn build_xpath_query(filter: &EventFilter) -> String {
     let mut condition = Vec::new();
     if let Some(ids) = filter.get_event_ids() {
         if ids.is_empty() {
-            let id_conditions: Vec<String> = ids
-                .iter()
-                .map(|id| format!("EventID={}", id))
-                .collect();
+            let id_conditions: Vec<String> =
+                ids.iter().map(|id| format!("EventID={}", id)).collect();
             condition.push(id_conditions.join(" or "));
         }
     }

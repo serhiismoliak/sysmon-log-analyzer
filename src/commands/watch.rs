@@ -1,19 +1,22 @@
 use crate::cli::WatchCommand;
+use crate::sysmon::Event as SysmonEvent;
+use crate::{filters, live_monitor};
 use anyhow::Result;
 use colored::Colorize;
-use crate::{filters, live_monitor};
-use crate::sysmon::{Event as SysmonEvent};
 
 #[cfg(windows)]
-pub(crate) fn execute_watch(
-    cmd: WatchCommand,
-) -> Result<()> {
+pub(crate) fn execute_watch(cmd: WatchCommand) -> Result<()> {
     let WatchCommand {
         event_id,
         search,
         detect,
     } = cmd;
-    println!("{}", "=== Security Log Analyzer - Live Monitor ===".bright_cyan().bold());
+    println!(
+        "{}",
+        "=== Security Log Analyzer - Live Monitor ==="
+            .bright_cyan()
+            .bold()
+    );
     println!("Monitoring Sysmon events in real-time...\n");
     println!("Press {} to exit\n", "Ctrl+C".bright_red());
 

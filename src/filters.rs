@@ -1,8 +1,7 @@
-use chrono::{DateTime, Utc};
-use crate::sysmon::{Event as SysmonEvent, NetworkEvent, System};
-use tracing::debug;
 use crate::helpers::HasSystem;
-
+use crate::sysmon::{Event as SysmonEvent, NetworkEvent, System};
+use chrono::{DateTime, Utc};
+use tracing::debug;
 
 #[derive(Debug, Clone, Default)]
 pub struct EventFilter {
@@ -20,7 +19,11 @@ impl EventFilter {
         self.event_ids = ids;
         self
     }
-    pub fn with_time_range(mut self, after: Option<DateTime<Utc>>, before: Option<DateTime<Utc>>) -> Self {
+    pub fn with_time_range(
+        mut self,
+        after: Option<DateTime<Utc>>,
+        before: Option<DateTime<Utc>>,
+    ) -> Self {
         self.after = after;
         self.before = before;
         self
@@ -59,7 +62,13 @@ impl EventFilter {
         true
     }
     pub fn search_matches(&self, event: &SysmonEvent, search: &str) -> bool {
-        if event.system().computer.computer.to_lowercase().contains(search) {
+        if event
+            .system()
+            .computer
+            .computer
+            .to_lowercase()
+            .contains(search)
+        {
             return true;
         }
         let check = |s: &str| s.to_lowercase().contains(&search);
@@ -75,22 +84,28 @@ impl EventFilter {
 
             SysmonEvent::FileCreate(file) => {
                 let data = &file.event_data;
-                check(&data.image.image)
-                    || check(&data.target_filename)
+                check(&data.image.image) || check(&data.target_filename)
             }
 
             SysmonEvent::InboundNetwork(net) | SysmonEvent::OutboundNetwork(net) => {
                 let data = &net.event_data;
                 check(&data.image)
                     || check(&data.destination_ip)
-                    || check(&data.user.as_ref().map(|s| s.user.to_owned()).unwrap_or_else(|| "".to_string()))
+                    || check(
+                        &data
+                            .user
+                            .as_ref()
+                            .map(|s| s.user.to_owned())
+                            .unwrap_or_else(|| "".to_string()),
+                    )
             }
         }
     }
     pub fn apply(&self, events: &[SysmonEvent]) -> Vec<SysmonEvent> {
-        events.iter().filter(
-            |event| self.matches(event))
-                .cloned()
-                .collect()
+        events
+            .iter()
+            .filter(|event| self.matches(event))
+            .cloned()
+            .collect()
     }
 }

@@ -1,9 +1,8 @@
-
-use std::path::PathBuf;
-use clap::{Parser, Subcommand, Args};
-use chrono::{DateTime, Utc};
 use crate::commands::parse::execute_parse;
 use crate::commands::watch::execute_watch;
+use chrono::{DateTime, Utc};
+use clap::{Args, Parser, Subcommand};
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(name = "Sysmon Log Analyzer")]
@@ -70,18 +69,14 @@ pub struct WatchCommand {
 
 pub fn execute(config: Config) -> anyhow::Result<()> {
     match config.command {
-        Commands::Parse(cmd) => {
-            execute_parse(cmd)
-        }
+        Commands::Parse(cmd) => execute_parse(cmd),
         #[cfg(windows)]
-        Commands::Watch(cmd) => {
-            execute_watch(cmd)
-        }
+        Commands::Watch(cmd) => execute_watch(cmd),
     }
 }
 pub fn parse_args() -> Config {
     Config {
-        command: Cli::parse().command
+        command: Cli::parse().command,
     }
 }
 pub struct Config {

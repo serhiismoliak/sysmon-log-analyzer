@@ -1,7 +1,7 @@
-use std::path::{Path, PathBuf};
-use evtx::{EvtxParser, ParserSettings};
 use crate::sysmon::Event as SysmonEvent;
 use anyhow::{Context, Result};
+use evtx::{EvtxParser, ParserSettings};
+use std::path::{Path, PathBuf};
 use tracing::{debug, info, warn};
 pub fn parse_evtx_file(path: &Path) -> Result<Vec<SysmonEvent>> {
     let mut parser = EvtxParser::from_path(path)
@@ -11,30 +11,30 @@ pub fn parse_evtx_file(path: &Path) -> Result<Vec<SysmonEvent>> {
 
     for record in parser.records() {
         match record {
-            Ok(record) => {
-                match parse_xml_event(&record.data) {
-                    Ok(event) => {
-                        events.push(event);
-                    },
-                    Err(e) => warn!("Failed to parse record as Sysmon event: {}", e),
+            Ok(record) => match parse_xml_event(&record.data) {
+                Ok(event) => {
+                    events.push(event);
                 }
-            }
+                Err(e) => warn!("Failed to parse record as Sysmon event: {}", e),
+            },
             Err(e) => warn!("Error reading EVTX record: {}", e),
         }
     }
     if events.is_empty() {
         warn!("No Sysmon events found in file: {}", path.to_string_lossy());
     } else {
-        info!("Parsed {} valid Sysmon events from {}", events.len(), path.to_string_lossy());
+        info!(
+            "Parsed {} valid Sysmon events from {}",
+            events.len(),
+            path.to_string_lossy()
+        );
     }
     Ok(events)
 }
 /// Parse Sysmon XML event
 pub fn parse_xml_event(xml: &str) -> anyhow::Result<SysmonEvent> {
-    SysmonEvent::from_str(&xml)
-        .map_err(|e| anyhow::anyhow!("Failed to parse event XML: {}", e))
+    SysmonEvent::from_str(&xml).map_err(|e| anyhow::anyhow!("Failed to parse event XML: {}", e))
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -84,7 +84,8 @@ mod tests {
     fn check_valid_process_create_event() {
         let xml = get_test_xml();
 
-        let event = SysmonEvent::from_str(xml).expect("Should parse valid Sysmon ProcessCreate event");
+        let event =
+            SysmonEvent::from_str(xml).expect("Should parse valid Sysmon ProcessCreate event");
 
         match event {
             SysmonEvent::ProcessCreate(ev) => {
