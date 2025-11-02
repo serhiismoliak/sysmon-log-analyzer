@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::Display;
-use chrono::{DateTime, Duration, NaiveDateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use crate::sysmon::{Event as SysmonEvent, NetworkEvent, ProcessCreateEvent};
-use tracing::debug;
+use tracing::{debug, info};
 use crate::helpers::HasSystem;
 
 #[derive(Debug, Clone)]
@@ -137,7 +137,7 @@ struct AnomalyDetector {
     /// Maps PID to Depth
     process_depth: HashMap<u64, usize>,
     /// Maps EventID to Timestamps
-    event_counts: HashMap<u8, Vec<NaiveDateTime>>,
+    event_counts: HashMap<u8, Vec<DateTime<Utc>>>,
 }
 impl AnomalyDetector {
     fn new() -> Self {
@@ -149,15 +149,22 @@ impl AnomalyDetector {
         }
     }
     fn analyze_batch(&mut self, events: &[SysmonEvent]) -> Vec<Anomaly> {
-        debug!("Starting batch anomaly detection on {} events", events.len());
+        info!("Starting batch anomaly detection on {} events", events.len());
 
         let mut sorted_events = events.to_vec();
         sorted_events.sort_by_key(|event| event.system().time_created.system_time.clone());
         for event in &sorted_events {
-            self.event_counts
-                .entry(event.system().event_id.event_id)
-                .or_default()
-                .push(event.system().time_created.system_time.parse().unwrap());
+            if let Ok(parsed_time) = event.system().time_created.system_time.parse() {
+                self.event_counts
+                    .entry(event.system().event_id.event_id)
+                    .or_default()
+                    .push(parsed_time);
+            } else {
+                info!("Failed to parse timestamp for event {}: '{}'",
+                           event.system().event_id.event_id,
+                           event.system().time_created.system_time);
+                continue;
+            }
             match event {
                 SysmonEvent::ProcessCreate(event) => {
                     if let Some(anomaly) = check_suspicious_parent_child(event) {
@@ -174,7 +181,7 @@ impl AnomalyDetector {
             }
         }
         self.check_event_storms_batch();
-        debug!("Finished batch anomaly detection on {} events", events.len());
+        info!("Finished batch anomaly detection on {} events", events.len());
         self.anomalies.clone()
     }
     fn check_process_depth_batch(&mut self, event: &ProcessCreateEvent) {

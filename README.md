@@ -1,8 +1,6 @@
 # Security Log Analyzer
 
-A Windows Sysmon log analysis tool developed to help security professionals and system administrators analyze and
-monitor system events. This tool provides both offline log parsing capabilities and real-time monitoring of Sysmon
-events.
+A lightweight tool for parsing, analyzing, and correlating security-related log data from various sources (e.g. Sysmon, Windows Event Logs, and system audit logs). Built to assist in exploring and understanding security log data by detecting unusual activities, identifying basic attack patterns, and presenting useful insights.
 
 ## Project Origin
 

@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use crate::sysmon::{Event as SysmonEvent, NetworkEvent, System};
 use tracing::debug;
 use crate::helpers::HasSystem;
@@ -7,8 +7,8 @@ use crate::helpers::HasSystem;
 #[derive(Debug, Clone, Default)]
 pub struct EventFilter {
     event_ids: Option<Vec<u8>>,
-    after: Option<NaiveDateTime>,
-    before: Option<NaiveDateTime>,
+    after: Option<DateTime<Utc>>,
+    before: Option<DateTime<Utc>>,
     search_term: Option<String>,
 }
 
@@ -20,7 +20,7 @@ impl EventFilter {
         self.event_ids = ids;
         self
     }
-    pub fn with_time_range(mut self, after: Option<NaiveDateTime>, before: Option<NaiveDateTime>) -> Self {
+    pub fn with_time_range(mut self, after: Option<DateTime<Utc>>, before: Option<DateTime<Utc>>) -> Self {
         self.after = after;
         self.before = before;
         self

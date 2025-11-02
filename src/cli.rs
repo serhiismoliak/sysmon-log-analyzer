@@ -1,7 +1,7 @@
 
 use std::path::PathBuf;
 use clap::{Parser, Subcommand, Args};
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use crate::commands::parse::execute_parse;
 use crate::commands::watch::execute_watch;
 
@@ -41,11 +41,11 @@ pub struct ParseCommand {
 
     /// Include events after this time (format: YYYY-MM-DD HH:MM:SS)
     #[arg(long)]
-    pub after: Option<NaiveDateTime>,
+    pub after: Option<DateTime<Utc>>,
 
     /// Include events before this time (format: YYYY-MM-DD HH:MM:SS)
     #[arg(long)]
-    pub before: Option<NaiveDateTime>,
+    pub before: Option<DateTime<Utc>>,
 
     /// Enable anomaly detection
     #[arg(long, short)]

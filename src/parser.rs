@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 use evtx::{EvtxParser, ParserSettings};
 use crate::sysmon::Event as SysmonEvent;
 use anyhow::{Context, Result};
-use tracing::{debug, warn};
+use tracing::{debug, info, warn};
 pub fn parse_evtx_file(path: &Path) -> Result<Vec<SysmonEvent>> {
     let mut parser = EvtxParser::from_path(path)
         .with_context(|| format!("Failed to open: {}", path.to_string_lossy()))?
@@ -16,7 +16,7 @@ pub fn parse_evtx_file(path: &Path) -> Result<Vec<SysmonEvent>> {
                     Ok(event) => {
                         events.push(event);
                     },
-                    Err(e) => debug!("Failed to parse record as Sysmon event: {}", e),
+                    Err(e) => warn!("Failed to parse record as Sysmon event: {}", e),
                 }
             }
             Err(e) => warn!("Error reading EVTX record: {}", e),
@@ -25,13 +25,12 @@ pub fn parse_evtx_file(path: &Path) -> Result<Vec<SysmonEvent>> {
     if events.is_empty() {
         warn!("No Sysmon events found in file: {}", path.to_string_lossy());
     } else {
-        debug!("Parsed {} valid Sysmon events from {}", events.len(), path.to_string_lossy());
+        info!("Parsed {} valid Sysmon events from {}", events.len(), path.to_string_lossy());
     }
     Ok(events)
 }
 /// Parse Sysmon XML event
 pub fn parse_xml_event(xml: &str) -> anyhow::Result<SysmonEvent> {
-    println!("{}", xml);
     SysmonEvent::from_str(&xml)
         .map_err(|e| anyhow::anyhow!("Failed to parse event XML: {}", e))
 }
