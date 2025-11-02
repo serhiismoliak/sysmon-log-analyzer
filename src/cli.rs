@@ -1,4 +1,5 @@
 use crate::commands::parse::execute_parse;
+#[cfg(windows)]
 use crate::commands::watch::execute_watch;
 use chrono::{DateTime, Utc};
 use clap::{Args, Parser, Subcommand};

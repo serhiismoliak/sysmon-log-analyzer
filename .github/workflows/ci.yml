@@ -9,31 +9,60 @@ on:
 jobs:
   build:
     name: Build, test, fmt, and clippy
-    runs-on: ubuntu-latest
-
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Rust
+      - name: Set up Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
           components: clippy, rustfmt
+          target: x86_64-pc-windows-msvc
+
+      - name: Cache cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Print Rust target info (debug)
+        run: rustc --version && rustc --print cfg
 
       - name: Build
-        run: cargo build --verbose
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cargo build --target x86_64-pc-windows-msvc --verbose
+          else
+            cargo build --verbose
+          fi
 
       - name: Run tests
-        run: cargo test --verbose
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cargo test --target x86_64-pc-windows-msvc --verbose
+          else
+            cargo test --verbose
+          fi
 
       - name: Check formatting
         run: cargo fmt --all -- --check
 
       - name: Run Clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cargo clippy --target x86_64-pc-windows-msvc --all-targets --all-features -- -D warnings
+          else
+            cargo clippy --all-targets --all-features -- -D warnings
+          fi

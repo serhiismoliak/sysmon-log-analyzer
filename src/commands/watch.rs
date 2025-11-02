@@ -1,3 +1,4 @@
+#![cfg(windows)]
 use crate::cli::WatchCommand;
 use crate::sysmon::Event as SysmonEvent;
 use crate::{filters, live_monitor};
