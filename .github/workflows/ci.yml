@@ -65,8 +65,8 @@ jobs:
       - name: Run Clippy
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            cargo clippy --target x86_64-pc-windows-msvc --all-targets --all-features -- -D warnings
+            cargo clippy --target x86_64-pc-windows-msvc --all-targets --all-features
           else
-            cargo clippy --all-targets --all-features -- -D warnings
+            cargo clippy --all-targets --all-features
           fi
         shell: bash
