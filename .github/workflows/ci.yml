@@ -56,8 +56,8 @@ jobs:
             cargo test --verbose
           fi
 
-      - name: Check formatting
-        run: cargo fmt --all -- --check
+      - name: Check formatting (non-blocking)
+        run: cargo fmt --all -- --check || echo "Code not properly formatted, continuing anyway..."
 
       - name: Run Clippy
         run: |

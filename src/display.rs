@@ -147,13 +147,15 @@ fn get_process_and_color(event: &SysmonEvent) -> (Color, String) {
         .unwrap_or(image.image.as_str())
         .to_string();
     let lower_name = process_name.to_lowercase();
-    let shell = ["powershell.exe",
+    let shell = [
+        "powershell.exe",
         "cmd.exe",
         "wscript.exe",
         "cscript.exe",
         "sh.exe",
         "bash.exe",
-        "zsh.exe"];
+        "zsh.exe",
+    ];
     let color = if shell.contains(&lower_name.as_str()) {
         Color::Red // High risk
     } else if event.system().event_id.event_id == 3 {

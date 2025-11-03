@@ -106,9 +106,7 @@ impl Anomaly {
                 reason,
                 ..
             } => {
-                format!(
-                    "Suspicious Process Chain: {parent} -> {child} ({reason})"
-                )
+                format!("Suspicious Process Chain: {parent} -> {child} ({reason})")
             }
             Anomaly::DeepProcessTree { depth, .. } => {
                 format!("Deep Process Nesting: {depth} levels")
@@ -121,9 +119,7 @@ impl Anomaly {
                 count,
                 time_window_seconds,
             } => {
-                format!(
-                    "Event Storm: ID {event_id} ({count} events in {time_window_seconds}s)"
-                )
+                format!("Event Storm: ID {event_id} ({count} events in {time_window_seconds}s)")
             }
         }
     }

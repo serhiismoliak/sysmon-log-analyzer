@@ -628,8 +628,6 @@ pub struct IntermediaryEventData {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
-    
 
     const NETWORK_EVENT: &str = r#"
     <Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
