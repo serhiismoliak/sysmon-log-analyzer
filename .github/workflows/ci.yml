@@ -22,8 +22,8 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          components: clippy, rustfmt
-          target: x86_64-pc-windows-msvc
+          components: clippy,rustfmt
+          targets: x86_64-pc-windows-msvc
 
       - name: Cache cargo registry and build
         uses: actions/cache@v4
@@ -38,6 +38,7 @@ jobs:
 
       - name: Print Rust target info (debug)
         run: rustc --version && rustc --print cfg
+        shell: bash
 
       - name: Build
         run: |
@@ -46,6 +47,7 @@ jobs:
           else
             cargo build --verbose
           fi
+        shell: bash
 
       - name: Run tests
         run: |
@@ -54,9 +56,11 @@ jobs:
           else
             cargo test --verbose
           fi
+        shell: bash
 
       - name: Check formatting (non-blocking)
         run: cargo fmt --all -- --check || echo "Code not properly formatted, continuing anyway..."
+        shell: bash
 
       - name: Run Clippy
         run: |
@@ -65,3 +69,4 @@ jobs:
           else
             cargo clippy --all-targets --all-features -- -D warnings
           fi
+        shell: bash
